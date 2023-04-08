@@ -21,17 +21,16 @@ public class ThirdJob {
     public static class MapperClass extends Mapper<LongWritable, Text, KeyForFirstJoin, Text> {
         @Override
         public void map(LongWritable lineId, Text line, Context context) throws IOException, InterruptedException {
-            String[] args = line.toString().split("\t");
+           
             if (args[1].equals("*")) {   // we are in the case <<w1,*,decade><N,number of occ of w>>
-                KeyForFirstJoin tmp1=new KeyForFirstJoin(args[2],args[0],"a");
-                Text tm2 = new Text("from1gram" + "\t" + args[3] + "\t" + args[4]);
-                context.write(tmp1, tm2);
-             //   System.out.println("the key is: "+tmp1+" the value is: "+tm2);
-            } else {  //we are in case <<w1,w2,decade><numberofoccw1w2>>. args[1] is for rememeber the second string.
-                KeyForFirstJoin tmp1=new KeyForFirstJoin(args[2],args[0],"b");
-                Text tm2 = new Text("from2gram" + "\t" + args[5] + "\t" + args[1]);
-                context.write(tmp1,tm2);
-               // System.out.println("the key is: "+tmp1+" the value is: "+tm2);
+                KeyForFirstJoin key = new KeyForFirstJoin(args[2],args[0],"a");
+                context.write(key, new Text("from1gram" + "\t" + args[3] + "\t" + args[4]));
+           
+            }
+            else {
+                KeyForFirstJoin key = new KeyForFirstJoin(args[2],args[0],"b");
+                context.write(key,new Text("from2gram" + "\t" + args[5] + "\t" + args[1]));
+           
             }
         }
     }
@@ -58,12 +57,6 @@ public class ThirdJob {
 
         public void reduce(KeyForFirstJoin key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
          for(Text value: values) {
-         //    if (!t.equals(key.toString())) {
-          //       t = key.toString();
-           //      numberofdecade = "0";
-           //      numberOfOccW = "0";
-          //       numberOfOcW1W2 = "0";
-          //   }
              String[] args = value.toString().split("\t");
              if(args[0].equals("from1gram")){
                  numberofdecade = args[1];
@@ -76,8 +69,6 @@ public class ThirdJob {
                  decade = keyString[0];
                  numberOfOcW1W2 = args[1];
 
-               //  System.out.println("In ThirdJob:\n"+"c1 is:"+numberOfOccW+", c12 is: "+args[1]+", N  is:"+numberofdecade);
-             //    System.out.println(keyString[1]+" "+args[2]+" "+keyString[0]);
                  context.write(new Text(keyString[1]+"\t"+args[2]+"\t"+keyString[0]),new Text(numberOfOccW+"\t"+args[1]+"\t"+numberofdecade));
              }
              else{
@@ -112,7 +103,7 @@ public class ThirdJob {
         job3.setReducerClass(ThirdJob.ReducerClass.class);
         //job3.setCombinerClass(ThirdJob.CombinerClass.class);
         job3.setPartitionerClass(ThirdJob.PartitionerClass.class);
-        //  job3.setNumReduceTasks(32);
+
 
         //  job3.setInputFormatClass(TextInputFormat.class);
 
