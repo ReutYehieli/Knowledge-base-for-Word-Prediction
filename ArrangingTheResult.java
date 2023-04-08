@@ -30,24 +30,15 @@ public class ArrangingTheResult {
 
     public static class ReducerClass extends Reducer<Probability, Text, Text, Text> {
         Integer count =100;
-       // public void setup(Context context) {
-        //i know that each decade will be in the same reduce;
-        //}
 
         public void reduce(Probability key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-          //  if(count == 100)  context.write(new Text("Decade is:"), new Text(String.valueOf(key.getDecade())));
-            for(Text value: values){
-             if(count > 0){
-                // System.out.println("The last class:"+key.getWord1()+" "+key.getWord2()+" "+ key.getProbability());
+             for(Text value: values){
+             if(count > 0) {
                    context.write(new Text(key.getDecade()+" "+key.getWord1()+" "+key.getWord2()),new Text(String.valueOf(key.getProbability())));
                    count --;
              }
-             else{return;}
-
+             else return;
         }
-        }
-
-        public void cleanup(Context context) {
         }
 
     }
