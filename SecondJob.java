@@ -51,12 +51,9 @@ public class SecondJob {
             }
         }
         public void map(LongWritable lineId, Text value, Context context) throws IOException, InterruptedException {
-            //log.info("In map method");
             int year = 0;
             String[] line = value.toString().split("\t");
             if (line.length == 5) {
-                //String wordStop = context.getConfiguration().get("WordStopFile");
-               // CreateHashSetStopWords(wordStop);
                 String[] word = line[0].split(" ");
                 if (word.length == 2) {
                     String firstWord = word[0].replaceAll(" ", "");
@@ -66,9 +63,7 @@ public class SecondJob {
                             year = Integer.parseInt(line[1]);
                         } catch (Exception e) {
                             System.out.println(e.toString() + " secondJob map ->IntegerPArseInt");
-                        }
-                        //we are sending <decade,w1,w2> <number ofOccW1W1>
-                        //context.write(new Text(year+"\t"+firstWord+"\t"+secondWord),new LongWritable(Long.parseLong(line[2])));
+                      }
                         context.write(new KeyWordPerDecade(year, firstWord, secondWord), new LongWritable(Long.parseLong(line[2])));
                     }
 
@@ -88,21 +83,14 @@ public class SecondJob {
         }
 
         public void reduce(KeyWordPerDecade key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
-            //   System.out.println("combine :start the combine");
             for (LongWritable value : values) {
                 if (!key.toString().equals(t)) {
                     t = key.toString();
                     numberOfOcc = 0;
                 }
-                // System.out.println("combine :the string is :"+ key.toString()+"the value is:"+value.get());
                 numberOfOcc = numberOfOcc + value.get();
             }
-            //  System.out.println("combine :the string is :"+ key.toString()+"the value is:"+numberOfOcc);
-            //context.write(key, new LongWritable(numberOfOcc));
             context.write(key, new LongWritable(numberOfOcc));
-        }
-
-        public void cleanup(Context context) {
         }
     }
 
@@ -117,7 +105,6 @@ public class SecondJob {
         }
 
         public void reduce(KeyWordPerDecade key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
-            //System.out.println("reduce :start the reduce class");
             for (LongWritable value : values) {
                 if (!key.toString().equals(t)) {
                     t = key.toString();
@@ -139,7 +126,7 @@ public class SecondJob {
         }
     }
 
-   /* public static void CreateHashSetStopWords(String wordStopFile) throws FileNotFoundException {
+    public static void CreateHashSetStopWords(String wordStopFile) throws FileNotFoundException {
 
         try {
             for (String word : wordStopFile.split("\n")) {
@@ -151,7 +138,6 @@ public class SecondJob {
         }
 
     }
-*/
 
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
 
@@ -177,17 +163,8 @@ public class SecondJob {
         job2.setCombinerClass(SecondJob.CombinerClass.class);
         job2.setPartitionerClass(SecondJob.PartitionerClass.class);
 
-
-        //job2.setInputFormatClass(TextInputFormat.class);
-
-
-        SequenceFileInputFormat.addInputPath(job2, new Path(args[3])); // path need to be with one grams.
-        //FileInputFormat.addInputPath(job2, new Path(args[3]));//////////////////////////
         FileOutputFormat.setOutputPath(job2, new Path("s3://ass2bucket1/output3"));  //the path from s3 need to be change
-        /// job2.setInputFormatClass(SequenceFileInputFormat.class);
-        //  job2.setInputFormatClass(TextInputFormat.class);///////////////////////
         job2.setInputFormatClass(SequenceFileInputFormat.class);
-
         job2.setOutputFormatClass(TextOutputFormat.class);
 
         job2.waitForCompletion(true);
