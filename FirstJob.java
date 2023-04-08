@@ -32,8 +32,6 @@ public class FirstJob {
     /// The first job will get one-garms dataset. and will count N & Ci for each wi
 
     public static class MapperClass extends Mapper<LongWritable, Text, KeyWordPerDecade, LongWritable>  {
-        //private final static IntWritable one = new IntWritable(1);
-
         public void setup(Context context) throws IOException, InterruptedException{
             String wordStop=  context.getConfiguration().get("WordStopFile");
             try{
@@ -50,9 +48,6 @@ public class FirstJob {
             System.out.println("Start the FirstJob2 map");
             String[] line = value.toString().split("\t");
              if(line.length == 5) {
-             //   pathWordStop = context.getConfiguration().get("WordStopFile");
-                 //String wordStop=  context.getConfiguration().get("WordStopFile");
-             //   CreateHashSetStopWords(wordStop);
                 String wordToCheck = line[0].replace(" ","");
                 boolean isContain = stopWordsHashSet.contains(wordToCheck.toLowerCase());
                 if (!isContain && wordToCheck.length()>= 2) {
@@ -97,35 +92,22 @@ public class FirstJob {
         public void setup(Context context) throws IOException, InterruptedException {
             numberOfOcc = 0;
             t = "";
-         //   hm = new HashMap<>();
-            //numberOccDecade = 0;
             decade = 0;
-            System.out.println("Start the reduce2 map");
-
-                 String decadeTable = context.getConfiguration().get("decadeTable");
-                 hm = PutThePreJobInHashMap(decadeTable);
+            String decadeTable = context.getConfiguration().get("decadeTable");
+            hm = PutThePreJobInHashMap(decadeTable);
             }
 
 
         public void reduce(KeyWordPerDecade key, Iterable<LongWritable> values, Context context) throws IOException,  InterruptedException {
             for (LongWritable value : values) {
-                //if (key.getWord1().equals("*")) {
-                //    if (decade != key.getDecade()) {
-                  //      decade = key.getDecade();
-                   //     numberOccDecade = value.get();
-                  // }
-               // }
-               //  else{
                     if (!key.toString().equals(t)) {
                         t = key.toString();
                         numberOfOcc = 0;
                     }
                     numberOfOcc = numberOfOcc + value.get();
-               // }
             }
                 long N = 0;
             try {
-                //String[] keyvalue = key.toString().split("\t");
                 N = hm.get(key.getDecade());
             } catch (NullPointerException e) {
                 System.out.println(e.getMessage());
